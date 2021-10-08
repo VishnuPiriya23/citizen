@@ -1,0 +1,55 @@
+name: Integration Tests
+
+on: [push, pull_request]
+
+jobs:
+  unit-test:
+    name: Integration tests with Node.js v${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node:
+          - 12
+          - 14
+          - 16
+
+    env:
+      CITIZEN_STORAGE: file
+      CITIZEN_STORAGE_PATH: /tmp/citizen
+      DEBUG: 'citizen:*'
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+      - name: GPG user IDs
+        run: |
+          echo "fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}"
+          echo "keyid:       ${{ steps.import_gpg.outputs.keyid }}"
+          echo "name:        ${{ steps.import_gpg.outputs.name }}"
+          echo "email:       ${{ steps.import_gpg.outputs.email }}"
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: 'Cache node_modules'
+        uses: actions/cache@v2
+        with:
+          path: '~/.npm'
+          key: ${{ runner.os }}-node-v${{ matrix.node }}-integration-npm-210321-${{ hashFiles('**/package-lock.json') }} }}
+          restore-keys: |
+            ${{ runner.os }}-node-v${{ matrix.node }}-integration-npm-210321-
+      - name: 'Cache terraform binaries'
+        uses: actions/cache@v2
+        with:
+          path: 'test/terraform-binaries'
+          key: ${{ runner.os }}-integration-terraform-210321-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-integration-terraform-210321-
+      - run: npm ci
+      - run: npm run test:integration -- --forbid-only

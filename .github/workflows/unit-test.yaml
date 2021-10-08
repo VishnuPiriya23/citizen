@@ -1,0 +1,63 @@
+name: Unit tests
+
+on: [push, pull_request]
+
+jobs:
+  unit-test:
+    name: Unit tests with Node.js v${{ matrix.node }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node:
+          - 12
+          - 14
+          - 16
+    services:
+      mongodb:
+        image: mongo
+        ports:
+          - 27017:27017
+
+    env:
+      CITIZEN_DB_DIR: ./data
+      CITIZEN_STORAGE: file
+      CITIZEN_STORAGE_PATH: /tmp/citizen
+      CITIZEN_ADDR: http://127.0.0.1:3000
+      CITIZEN_MOCK_ENABLED: true
+      CITIZEN_AWS_S3_BUCKET: kr.ne.outsider.test
+      AWS_ACCESS_KEY_ID: ooooo
+      AWS_SECRET_ACCESS_KEY: xxxxx
+      AWS_REGION: ap-northeast-1
+      DEBUG: 'citizen:*'
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+      - name: GPG user IDs
+        run: |
+          echo "fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}"
+          echo "keyid:       ${{ steps.import_gpg.outputs.keyid }}"
+          echo "name:        ${{ steps.import_gpg.outputs.name }}"
+          echo "email:       ${{ steps.import_gpg.outputs.email }}"
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: 'Cache node_modules'
+        uses: actions/cache@v2
+        with:
+          path: '~/.npm'
+          key: ${{ runner.os }}-node-v${{ matrix.node }}-210321-${{ hashFiles('**/package-lock.json') }} }}
+          restore-keys: |
+            ${{ runner.os }}-node-v${{ matrix.node }}-210321-
+      - run: npm ci
+      - name: linting
+        run: npm run lint
+      - name: unit test
+        run: npm run test:unit -- --forbid-only

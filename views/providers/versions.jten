@@ -1,0 +1,7 @@
+module.exports = (data) => ({
+  versions: data.versions.map(v => ({
+    version: v.version,
+    protocols: v.protocols,
+    platforms: v.platforms
+  }))
+});
