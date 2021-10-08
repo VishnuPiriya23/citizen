@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const _ = require('lodash');
-
+console.log('list.js start');
 const { findAllModules, getModuleVersions } = require('../stores/store');
 const { makeUrl } = require('../lib/util');
 
@@ -9,6 +9,7 @@ const router = Router();
 // https://www.terraform.io/docs/registry/api.html#search-modules
 router.get('/search', async (req, res) => {
   if (!req.query.q) {
+    console.log('list.js line 12',req.query.provider);
     return res.status(400).render('error', {
       message: 'q parameter required.',
     });
@@ -37,6 +38,7 @@ router.get('/search', async (req, res) => {
       offset: data.meta.nextOffset,
     });
   }
+  console.log('list.js line 41',data);
   return res.render('modules/list', data);
 });
 
@@ -54,6 +56,7 @@ router.get(['/', '/:namespace'], async (req, res) => {
       offset: data.meta.nextOffset,
     });
   }
+  console.log('list.js line 52',data);
   res.render('modules/list', data);
 });
 
@@ -89,6 +92,7 @@ router.get('/:namespace/:name', async (req, res) => {
 
   const modules = Object.keys(grouped).map((key) => {
     const sorted = _.orderBy(grouped[key], ['versions']);
+    console.log('list.js line 95');
     return sorted[sorted.length - 1];
   });
 
@@ -113,3 +117,4 @@ router.get('/:namespace/:name', async (req, res) => {
 });
 
 module.exports = router;
+console.log('list.js line 120 end');

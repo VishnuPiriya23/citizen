@@ -3,7 +3,7 @@ const { join, parse } = require('path');
 const { promisify } = require('util');
 const debug = require('debug')('citizen:server');
 const mkdirp = require('mkdirp');
-
+console.log('file.js start');
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
 const access = promisify(fs.access);
@@ -81,3 +81,4 @@ module.exports = {
   },
 
 };
+console.log('file.js end');

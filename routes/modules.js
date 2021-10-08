@@ -5,7 +5,7 @@ const logger = require('../lib/logger');
 const { parseHcl } = require('../lib/util');
 const storage = require('../lib/storage');
 const { saveModule, getModuleLatestVersion, findOneModule } = require('../stores/store');
-
+console.log('modules.js start');
 const router = Router();
 
 // register a module with version
@@ -20,19 +20,21 @@ router.post('/:namespace/:name/:provider/:version', (req, res, next) => {
   let tarball;
   let filename;
   let owner = '';
-
+  console.log('modules.js line 23',destPath);
   const form = new multiparty.Form();
 
   form.on('error', (err) => {
     logger.error(`Error parsing form: ${err.stack}`);
     next(err);
   });
+  console.log('modules.js line 30');
 
   form.on('part', async (part) => {
     part.on('error', (err) => {
       logger.error(`Error parsing form: ${err.stack}`);
       next(err);
     });
+    console.log('modules.js line 37');
 
     const ownerBuf = [];
     const file = [];
@@ -62,6 +64,7 @@ router.post('/:namespace/:name/:provider/:version', (req, res, next) => {
         const error = new Error('Module exist');
         error.status = 409;
         error.message = `${destPath} is already exist.`;
+        console.log('modules.js line 67');
         return next(error);
       }
 
@@ -78,6 +81,7 @@ router.post('/:namespace/:name/:provider/:version', (req, res, next) => {
       });
 
       if (fileResult && metaResult) {
+        console.log('modules.js line 84',fileResult,metaResult);
         return res.status(201).render('modules/register', {
           id: destPath,
           owner,
@@ -88,10 +92,11 @@ router.post('/:namespace/:name/:provider/:version', (req, res, next) => {
           published_at: new Date(),
         });
       }
-
+      console.log('modules.js line 95');
       return next(new Error());
     } catch (e) {
       logger.error(e);
+      console.log('modules.js line 99');
       return next(e);
     }
   });
@@ -106,9 +111,10 @@ router.get('/:namespace/:name/:provider/:version', async (req, res, next) => {
   const module = await findOneModule(options);
 
   if (!module) {
+    console.log('modules.js line 114');
     return next();
   }
-
+  console.log('modules.js line 117');
   return res.render('modules/module', module);
 });
 
@@ -119,10 +125,12 @@ router.get('/:namespace/:name/:provider', async (req, res, next) => {
   const module = await getModuleLatestVersion(options);
 
   if (!module) {
+    console.log('modules.js line 128',module);
     return next();
   }
-
+  console.log('modules.js line 131');
   return res.render('modules/latest-version', module);
 });
 
 module.exports = router;
+console.log('modules.js line 136 end');

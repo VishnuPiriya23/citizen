@@ -3,7 +3,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-
+console.log('app.js start');
 const app = express();
 
 const logger = require('./lib/logger');
@@ -54,6 +54,7 @@ if (app.get('env') === 'development') {
     });
   });
 }
+console.log('app.js line 57')
 
 // production error handler
 // no stacktraces leaked to user
@@ -68,5 +69,7 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
     error: {},
   });
 });
+console.log('app.js line 72');
 
 module.exports = app;
+console.log('app.js line 75 end');
